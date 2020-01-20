@@ -1,0 +1,11 @@
+---
+- name: webservices
+  user: root
+  hosts: webservices
+  plugins:
+    - name: systemd
+      service_name: "webservice@*"
+    - name: webservice
+      routes:
+        method: GET
+        route: /api/status
