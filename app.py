@@ -27,8 +27,8 @@ def get_logger(nome):
 
 
 def load_hosts():
-    def generate_section_hosts_pair():
-        with open('hosts.yml', 'r') as hosts_file:
+    def generate_section_hosts_pair(filepath='hosts.yml'):
+        with open(filepath, 'r') as hosts_file:
             hosts_dict = yaml.load(hosts_file.read(), Loader=yaml.SafeLoader)
 
             for section, hosts in hosts_dict.items():
@@ -44,11 +44,9 @@ def load_hosts():
     return hosts
 
 
-def load_services():
-    with open('services.yml', 'r') as services_file:
-        services_dict = yaml.load(services_file.read(), Loader=yaml.SafeLoader)
-
-        return services_dict
+def load_services(filepath='services.yml'):
+    with open(filepath, 'r') as services_file:
+        return yaml.load(services_file.read(), Loader=yaml.SafeLoader)
 
 
 def connect_ssh(hosts, user):

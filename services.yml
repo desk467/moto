@@ -6,6 +6,9 @@
     - name: systemd
       service_name: "webservice@*"
     - name: webservice
+      request_from_server: true
       routes:
         method: GET
-        route: /api/status
+        route: "http://{{ webservice_url }}/api/status"
+        host: localhost
+        port: 800x
