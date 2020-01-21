@@ -3,31 +3,25 @@ import plugins
 import paramiko
 import sys
 import logging
+import coloredlogs
+
 from collections import defaultdict
 
 
-def get_logger(nome):
-    '''
-    Responsável por retornar uma instância de um logger
-    '''
-
-    logger = logging.getLogger('logger_' + nome)
+def get_logger(name):
+    logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
-
-    formatter = logging.Formatter(
-        '%(asctime)-10s [%(levelname)-4s] - %(message)-14s')
 
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setLevel(logging.INFO)
-    stdout_handler.setFormatter(formatter)
 
     logger.addHandler(stdout_handler)
 
     return logger
 
 
-def load_hosts():
-    def generate_section_hosts_pair(filepath='hosts.yml'):
+def load_hosts(filepath):
+    def generate_section_hosts_pair():
         with open(filepath, 'r') as hosts_file:
             hosts_dict = yaml.load(hosts_file.read(), Loader=yaml.SafeLoader)
 
@@ -44,7 +38,7 @@ def load_hosts():
     return hosts
 
 
-def load_services(filepath='services.yml'):
+def load_services(filepath):
     with open(filepath, 'r') as services_file:
         return yaml.load(services_file.read(), Loader=yaml.SafeLoader)
 
@@ -57,16 +51,24 @@ def connect_ssh(hosts, user):
     for host in hosts:
         ssh_client.connect(host, username=user,
                            look_for_keys=True, timeout=5000)
-        yield ssh_client
+        yield host, ssh_client
 
         ssh_client.close()
 
 
-def run_tests():
-    logger = get_logger('test')
+def get_plugin_name(attrs):
+    return [key for key in attrs.keys() if key != 'name'][0]
 
-    all_hosts = load_hosts()
-    all_services = load_services()
+
+def run_tests(hosts_filepath='hosts.yml', services_filepath='services.yml'):
+    logger = get_logger('test_runner')
+
+    coloredlogs.install(logger=logger)
+
+    logger.info('Test runner started')
+
+    all_hosts = load_hosts(hosts_filepath)
+    all_services = load_services(services_filepath)
 
     for service in all_services:
         hosts_to_execute = service.get('hosts')
@@ -76,36 +78,39 @@ def run_tests():
 
         all_test_results = {}
 
-        for plugin_attrs in service.get('plugins', []):
-            plugin_name = plugin_attrs.get('name')
-            plugin_args = {key: val for key,
-                           val in plugin_attrs.items() if key != 'name'}
+        for test_attrs in service.get('tests', []):
+            test_name = test_attrs.get('name')
+            test_plugin = get_plugin_name(test_attrs)
+            test_plugin_args = test_attrs.get(test_plugin)
 
-            plugin_args['logger'] = logger
-            plugin_args['ssh_connections'] = connect_ssh(
+            test_plugin_args['logger'] = logger
+            test_plugin_args['ssh_connections'] = connect_ssh(
                 hosts, user_to_execute)
 
-            plugin_func = getattr(plugins, plugin_name)
+            plugin_func = getattr(plugins, test_plugin)
 
-            is_test_passed = plugin_func(**plugin_args)
+            is_test_passed, extradata = plugin_func(**test_plugin_args)
 
-            all_test_results[plugin_name] = is_test_passed
+            all_test_results[test_name] = is_test_passed
 
             if is_test_passed:
                 logger.info(
-                    f'Teste do plugin "{plugin_name}" passou')
+                    f'Task "{test_name}" passed')
             else:
-                logger.info(
-                    f'Teste do plugin "{plugin_name}" não passou')
+                logger.error(
+                    f'Task "{test_name}" did not pass')
+
+        logger.info('Test runner done all tests')
+        logger.info('** Summary **')
 
         if all(all_test_results.values()):
-            logger.info('Todos os testes passaram.')
+            logger.info('All tests PASSED.')
         else:
-            logger.info('Os testes a seguir falharam:')
+            logger.info('The following tests have FAILED')
 
-            for plugin_name, is_test_passed in all_test_results.items():
+            for test_name, is_test_passed in all_test_results.items():
                 if not is_test_passed:
-                    logger.info(f'\t{plugin_name}')
+                    logger.info(f'\t{test_name}')
 
 
 if __name__ == '__main__':

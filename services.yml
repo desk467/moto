@@ -2,13 +2,15 @@
 - name: webservices
   user: root
   hosts: webservices
-  plugins:
-    - name: systemd
-      service_name: "webservice@*"
-    - name: webservice
-      request_from_server: true
-      routes:
-        method: GET
-        route: "http://{{ webservice_url }}/api/status"
-        host: localhost
-        port: 800x
+  tests:
+    - name: Verificar se serviço está rodando
+      systemd:
+        service_name: "webservice@*"
+    - name: Verificar se o web service está respondendo
+      webservice:
+        request_from_server: true
+        routes:
+          method: GET
+          route: "http://{{ webservice_url }}/api/status"
+          host: localhost
+          port: 800x
