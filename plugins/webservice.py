@@ -14,6 +14,23 @@ import jinja2
 import json
 
 
+def parse_curl_response(http_response):
+    dict_response = {}
+
+    first_line = True
+    for line in reversed(http_response):
+        if first_line:
+            first_line = False
+            dict_response['data'] = json.loads(line)
+        elif 'HTTP' in line:
+            dict_response['status'] = int(line.split(' ')[1])
+        elif len(line):
+            key, val = line.split(':', 1)
+            dict_response[key] = val
+
+    return dict_response
+
+
 def generate_port_range(port_pattern):
     for i in range(10):
         port = port_pattern.replace('x', str(i), 1)
@@ -37,24 +54,49 @@ def get_active_ports(host, port_pattern, connection):
             break
 
 
+def create_do_local_request(connection):
+    def do_local_request(url):
+        stdin, stdout, stderr = connection.exec_command(f'curl -i {url}')
+
+        raw_response = stdout.read().decode().split('\n')
+        raw_response = [line.strip('\r') for line in raw_response]
+        dict_response = parse_curl_response(raw_response)
+
+        return {
+            'is_response_ok': dict_response.get('status', 500) >= 200 and dict_response.get('status') < 300,
+            'http_code': dict_response.get('status', 500),
+            'data': dict_response.get('data', {})
+        }
+
+    return do_local_request
+
+
+def create_do_remote_request():
+    def do_remote_request(url):
+        call_method = getattr(requests, routes.get('method', 'get').lower())
+
+        response = call_method(url)
+
+        return {
+            'is_response_ok': response.ok,
+            'http_code': response.status_code,
+            'data': response.json(),
+        }
+
+    return do_remote_request
+
+
 def webservice(routes, request_from_server, logger, ssh_connections):
     port_pattern = routes.get('port')
     host = routes.get('host')
     url = routes.get('route')
     template = jinja2.Template(url)
 
-    def create_do_local_request(connection):
-        def do_local_request(url):
-            stdin, stdout, stderr = connection.exec_command(f'curl {url}')
-
-            return json.loads(stdout.read())
-        return do_local_request
-
-    for connection in ssh_connections:
+    for _, connection in ssh_connections:
         if request_from_server:
             do_request = create_do_local_request(connection)
         else:
-            do_request = getattr(requests, routes.get('method', 'get').lower())
+            do_request = create_do_remote_request()
 
         for port in get_active_ports(host, port_pattern, connection):
             webservice_url = f'{host}:{port}'
@@ -63,7 +105,7 @@ def webservice(routes, request_from_server, logger, ssh_connections):
             try:
                 response = do_request(url_to_request)
                 logger.debug(response)
-            except:
-                return False
+            except Exception as ex:
+                return False, None
 
-    return True
+    return True, None

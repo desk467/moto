@@ -6,18 +6,52 @@ se um serviço está ativo.
 
 '''
 
+import locale
+from datetime import datetime
+from datetime import timedelta
+
 __author__ = 'Ricardo Gomes'
 
 
+def parse_systemctl_show(info):
+    info_per_service = {}
+
+    for line in info:
+        if len(line.strip('\n')) == 0:
+            yield info_per_service
+            info_per_service = {}
+        else:
+            key, val = line.strip('\n').split('=', 1)
+            info_per_service[key] = val
+    else:
+        yield info_per_service
+
+
+def generate_extradata(services_info, host):
+    for service in services_info:
+        yield {
+            'name': service.get('Names'),
+            'is_active': service.get('ActiveState') == 'active',
+            'started_since': datetime.strptime(service.get('ActiveEnterTimestamp') + '00', '%a %Y-%m-%d %H:%M:%S %z'),
+            'host': host
+        }
+
+
 def systemd(service_name, logger, ssh_connections):
-    logger.debug(f'Verificando a execução do serviço "{service_name}"')
+    logger.debug(f'Checking if "{service_name}" is up')
 
-    for connection in ssh_connections:
+    extradata = []
+
+    for host, connection in ssh_connections:
         stdin, stdout, stderr = connection.exec_command(
-            f'systemctl is-active {service_name}')
+            f'systemctl show {service_name}')
 
-        for line in stdout:
-            if line.strip('\n') != 'active':
-                return False
+        services_info = parse_systemctl_show(stdout)
 
-        return True
+        extradata = extradata + list(generate_extradata(services_info, host))
+
+    for data in extradata:
+        if not data.get('is_active'):
+            return False
+
+    return True, extradata
