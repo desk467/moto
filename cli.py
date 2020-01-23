@@ -3,7 +3,7 @@ import traceback
 import sys
 import os
 
-import app
+import testrunner
 
 
 def get_args():
@@ -23,7 +23,7 @@ def get_args():
 
 def main():
     args = get_args()
-    app.run_tests(hosts_filepath=args.hosts_file,
+    testrunner.run_tests(hosts_filepath=args.hosts_file,
                   services_filepath=args.service_file)
 
 
