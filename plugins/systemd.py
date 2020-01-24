@@ -10,6 +10,10 @@ import locale
 from datetime import datetime
 from datetime import timedelta
 
+from util import get_logger
+
+logger = get_logger('systemd')
+
 __author__ = 'Ricardo Gomes'
 
 
@@ -37,7 +41,7 @@ def generate_extradata(services_info, host):
         }
 
 
-def systemd(service_name, logger, ssh_connections):
+def systemd(service_name, ssh_connections):
     logger.debug(f'Checking if "{service_name}" is up')
 
     extradata = []

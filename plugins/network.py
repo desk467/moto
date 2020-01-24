@@ -7,8 +7,10 @@ Plugin responsável por verificar se uma interface está ativa.
 '''
 
 import re
-from datetime import timedelta
 
+from util import get_logger
+
+logger = get_logger('network')
 
 def parse_ping(info):
     text = info.read().decode()
@@ -37,7 +39,7 @@ def parse_ping(info):
             "transmitted": int(transmitted),
             "received": int(received),
             "loss": int(loss)/100,
-            "time": timedelta(milliseconds=int(time))
+            "time": int(time),
         }
     }
 
@@ -83,7 +85,7 @@ def parse_ifconfig_iface(info):
     return parsed_data
 
 
-def network(interface, logger, ssh_connections, ping=False, ping_to=None, num_of_tries=1, packet_loss_threshold=0.0):
+def network(interface, ssh_connections, ping=False, ping_to=None, num_of_tries=1, packet_loss_threshold=0.0):
     all_hosts_passed = []
     extradata = []
 
@@ -102,7 +104,8 @@ def network(interface, logger, ssh_connections, ping=False, ping_to=None, num_of
 
         ping_data = parse_ping(stdout) if ping else {}
 
-        ping_test_passed = ping_data.get("packets", {}).get("loss") == packet_loss_threshold
+        ping_test_passed = ping_data.get("packets", {}).get(
+            "loss") == packet_loss_threshold
 
         extradata.append({
             'host': host,

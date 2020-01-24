@@ -1,20 +1,29 @@
 from flask import Flask, jsonify
 
+import exceptions
 from util import get_logger
 from env import load_hosts, load_services
-from testrunner import run_tests
+from testrunner import run_all_tests
+
+import asyncio
 
 logger = get_logger('webservice')
 
 
 app = Flask(__name__)
+loop = asyncio.get_event_loop()
+
 
 @app.route('/status')
 @app.route('/status/<service_name>')
 def get_status(service_name=None):
-    test_results = run_tests(service_name=service_name)
+    try:
+        test_results = loop.run_until_complete(
+            run_all_tests(service_name=service_name))
 
-    return jsonify(test_results)
+        return jsonify(test_results)
+    except exceptions.ServiceNotFound:
+        return jsonify({'message': 'SERVICE_NOT_FOUND', 'service_name': service_name}), 404
 
 
 @app.route('/services')

@@ -13,6 +13,10 @@ import requests
 import jinja2
 import json
 
+from util import get_logger
+
+logger = get_logger('webservice')
+
 
 def parse_curl_response(http_response):
     dict_response = {}
@@ -86,7 +90,7 @@ def create_do_remote_request():
     return do_remote_request
 
 
-def webservice(routes, request_from_server, logger, ssh_connections):
+def webservice(routes, request_from_server, ssh_connections):
     port_pattern = routes.get('port')
     host = routes.get('host')
     url = routes.get('route')
