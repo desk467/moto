@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Blueprint, jsonify
 
 import exceptions
 from util import get_logger
@@ -7,15 +7,15 @@ from testrunner import run_all_tests
 
 import asyncio
 
-logger = get_logger('webservice')
+logger = get_logger(__name__)
 
 
-app = Flask(__name__)
+webservice = Blueprint('webservice', __name__, url_prefix='/api')
 loop = asyncio.get_event_loop()
 
 
-@app.route('/status')
-@app.route('/status/<service_name>')
+@webservice.route('/status')
+@webservice.route('/status/<service_name>')
 def get_status(service_name=None):
     try:
         test_results = loop.run_until_complete(
@@ -26,7 +26,7 @@ def get_status(service_name=None):
         return jsonify({'message': 'SERVICE_NOT_FOUND', 'service_name': service_name}), 404
 
 
-@app.route('/services')
+@webservice.route('/services')
 def get_service_names():
     hosts = load_hosts('hosts.yml')
     return jsonify([
@@ -38,4 +38,4 @@ def get_service_names():
 
 
 if __name__ == '__main__':
-    app.run(port=3000)
+    webservice.run(port=3000)
