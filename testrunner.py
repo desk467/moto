@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from collections import defaultdict
 
-from env import load_hosts, load_services
+from env import load_hosts, load_services, load_testsuits
 from util import get_logger
 import exceptions
 
@@ -57,7 +57,15 @@ def run_test_for_service(service, hosts, test_attrs):
     return test_name, is_test_passed, extradata
 
 
-async def run_all_tests_for_service(user, hosts, service):
+def load_tests_from_testsuits(service, testsuits):
+    for testsuit in testsuits:
+        for testsuit_of_service in service.get('testsuits'):
+            if testsuit.get('name') == testsuit_of_service:
+                for test in testsuit.get('tests'):
+                    yield test
+
+
+async def run_all_tests_for_service(user, hosts, service, testsuits):
     service_name = service.get('name')
     hosts_to_execute = service.get('hosts')
 
@@ -67,6 +75,10 @@ async def run_all_tests_for_service(user, hosts, service):
 
     with ThreadPoolExecutor(max_workers=cpu_count()) as executor:
         loop = asyncio.get_event_loop()
+
+        if service.get('testsuits'):
+            service['tests'] = service.get(
+                'tests', []) + list(load_tests_from_testsuits(service, testsuits))
 
         futures = [loop.run_in_executor(
             executor, run_test_for_service, service, hosts, test_attrs) for test_attrs in service.get('tests', [])]
@@ -88,7 +100,7 @@ def get_hosts_for_service(hosts_filepath, service):
     return all_hosts.get(service.get('name'))
 
 
-async def run_all_tests(hosts_filepath='hosts.yml', services_filepath='services.yml', service_name=None):
+async def run_all_tests(hosts_filepath='hosts.yml', services_filepath='services.yml', testsuits_filepath='testsuits.yml', service_name=None):
     logger.info('Test runner started')
 
     all_services = load_services(services_filepath)
@@ -107,8 +119,9 @@ async def run_all_tests(hosts_filepath='hosts.yml', services_filepath='services.
 
     for service in all_services:
         hosts = get_hosts_for_service(hosts_filepath, service)
+        testsuits = load_testsuits(testsuits_filepath)
 
-        service_name, test_results = await run_all_tests_for_service(service.get('user'), hosts, service)
+        service_name, test_results = await run_all_tests_for_service(service.get('user'), hosts, service, testsuits)
 
         test_summary[service_name] = test_results
 

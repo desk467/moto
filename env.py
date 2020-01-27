@@ -2,6 +2,11 @@ import yaml
 from collections import defaultdict
 
 
+def load_testsuits(filepath):
+    with open(filepath, 'r') as testsuits_file:
+        return yaml.load(testsuits_file.read(), Loader=yaml.SafeLoader)
+
+
 def load_hosts(filepath):
     def generate_section_hosts_pair():
         with open(filepath, 'r') as hosts_file:
