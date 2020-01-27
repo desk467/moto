@@ -4,13 +4,139 @@
 
 {% block body %}
 
-{% with header_title="Início"%}
-    {% include "components/_header.html" %}
+{% with header_title="STATUS PAGE"%}
+{% include "components/_header.html" %}
 {% endwith %}
 
-<main>
+<main class="container">
+
+    <div class="row">
+        <div class="col-sm-10 offset-sm-2 col-md-6 offset-md-3">
+            <section class="section--status alert">
+                <i class="fa fa-spinner fa-pulse"></i>
+            </section>
+        </div>
+    </div>
+
+    <div class="row">
+        <table class="table table-borderless">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Nome do serviço</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for service in services %}
+                <tr class="services" data-nome="{{ service.name }}">
+                    <td>{{ service.name }}</td>
+                    <td class="td-service-status">
+                        <div class="service-status">
+                            <i class="fa fa-spinner fa-pulse"></i>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+
 </main>
 
+<script>
+
+    $(document).ready(function () {
+        const TPL_TD_SUCCESS = `
+        <div class="service-status service-status--success">
+            <i class="fa fa-check"></i> Executando normalmente
+        </div>
+        `
+
+        const TPL_TD_WARN = `
+        <div class="service-status service-status--warning">
+            <i class="fa fa-exclamation"></i> Serviço com problemas. Clique para mais detalhes
+        </div>
+        `
+
+        const TPL_TD_ERROR = `
+        <div class="service-status service-status--warning">
+            <i class="fa fa-exclamation"></i> Serviço com problemas. Clique para mais detalhes
+        </div>
+        `
+
+        const req_server_status = new Promise((resolve, reject) => {
+            let all_services_status = []
+
+            $('.services').each(function (i, el) {
+                let service = $(el).data('nome')
+
+                $.ajax({
+                    method: 'GET',
+                    url: '/api/status/' + service,
+                    contentType: 'application/json',
+                    success: function (data) {
+                        let tests = Object.values(data[service])
+                        let is_service_online = tests.every(test => test.is_test_passed)
+                        let is_service_offline = tests.every(test => !test.is_test_passed)
+
+                        if (is_service_online) {
+                            $(el).find('.td-service-status').html(TPL_TD_SUCCESS)
+
+                        } else if (is_service_offline) {
+                            $(el).find('.td-service-status').html(TPL_TD_ERROR)
+
+                        } else {
+                            $(el).find('.td-service-status').html(TPL_TD_WARN)
+                        }
+
+                        all_services_status.push([is_service_online, is_service_offline])
+                    },
+                    error: function (err) {
+                        console.log(err)
+                    }
+                })
+            })
+
+            $(document).ajaxStop(function () {
+                resolve(all_services_status)
+            })
+        })
+
+        req_server_status.then(all_status => {
+            const all_services_online = all_status.every(([is_service_online, is_service_offline]) => {
+                return is_service_online && !is_service_offline
+            })
+
+            const all_services_offline = all_status.every(([is_service_online, is_service_offline]) => {
+                return !is_service_online && is_service_offline
+            })
+
+            const some_services_with_problems = !all_services_online && !all_services_offline
+
+
+            let section_status = $('.section--status')
+
+            if (all_services_online) {
+                section_status.addClass('alert-success')
+                section_status.html(`<i class="fa fa-check"/> Tudo funcionando normalmente.`)
+            } else if (all_services_offline) {
+                section_status.addClass('alert-danger')
+                section_status.html('<i class="fa fa-times"/> Todos os serviços estão com problemas.')
+            } else if (some_services_with_problems) {
+                section_status.addClass('alert-warning')
+                section_status.html('<i class="fa fa-exclamation"/> Alguns serviços estão com problemas. Veja abaixo para mais detalhes.')
+            }
+        })
+    })
+</script>
+
+
+<style>
+
+</style>
 
 
 {% endblock %}

@@ -1,34 +1,15 @@
-<div class="header">
-    <div class="header__title">
-        <h1>
-            {{ header_title }}
-        </h1>
-    </div>
-    <div class="header__subtitle">
-        <h2>
-            {{ header_subtitle }}
-        </h2>
-    </div>
-</div>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">{{ header_title }}</a>
+</nav>
 
 <style>
-    .header__title {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 1em;
-        font-weight: 600;
-        color: #fff;
-
-        padding: .35em 1em;
+    .navbar {
+        border-bottom: 1px solid #DDDDDDAA;
+        margin-bottom: 1em;
     }
-
-    .header__subtitle {
-        background-color: var(--secondary-color);
-        font-family: 'Open Sans', sans-serif;
+    .navbar .navbar-brand {
+        font-family: 'Montserrat', sans-serif;
         font-weight: 600;
-        font-size: .75em;
-
-        padding: .15em 1em;
-        color: #fff;
-
+        color: #444;
     }
 </style>

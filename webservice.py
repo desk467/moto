@@ -9,15 +9,14 @@ import asyncio
 
 logger = get_logger(__name__)
 
-
 webservice = Blueprint('webservice', __name__, url_prefix='/api')
-loop = asyncio.get_event_loop()
-
 
 @webservice.route('/status')
 @webservice.route('/status/<service_name>')
 def get_status(service_name=None):
     try:
+        loop = asyncio.new_event_loop()
+
         test_results = loop.run_until_complete(
             run_all_tests(service_name=service_name))
 
