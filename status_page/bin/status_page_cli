@@ -1,10 +1,13 @@
+#!/usr/bin/env python
+
 import argparse
 import traceback
 import sys
 import os
 
 import asyncio
-import testrunner
+from status_page import testrunner
+from status_page.server import app
 
 
 def get_args():
@@ -17,6 +20,9 @@ def get_args():
     parser.add_argument('--hosts-file', type=str, default='hosts.yml',
                         help='Which host file to use. Default: "hosts.yml"')
 
+    parser.add_argument('--exec', type=str, default='all_tests',
+                        choices=['all_tests', 'server'])
+
     args = parser.parse_args()
 
     return args
@@ -25,9 +31,12 @@ def get_args():
 def main():
     loop = asyncio.get_event_loop()
     args = get_args()
-    loop.run_until_complete(testrunner.run_all_tests(hosts_filepath=args.hosts_file,
-                                                     services_filepath=args.service_file))
 
+    if args.exec == 'all_tests':
+        loop.run_until_complete(testrunner.run_all_tests(hosts_filepath=args.hosts_file,
+                                                         services_filepath=args.service_file))
+    elif args.exec == 'server':
+        app.run(debug=False, host='0.0.0.0')
 
 if __name__ == '__main__':
     main()

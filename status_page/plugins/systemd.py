@@ -10,7 +10,7 @@ import locale
 from datetime import datetime
 from datetime import timedelta
 
-from util import get_logger
+from status_page.util import get_logger
 
 logger = get_logger('systemd')
 

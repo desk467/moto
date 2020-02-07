@@ -4,3 +4,6 @@ venv/
 *.pyc
 .vscode/
 *.yml
+dist/
+build/
+*.egg-info

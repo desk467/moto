@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
-from util import get_logger
-from env import load_hosts, load_services
+from status_page.util import get_logger
+from status_page.env import load_hosts, load_services
 
 logger = get_logger(__name__)
 
@@ -20,3 +20,11 @@ def index():
     ]
 
     return render_template('index.html', services=services)
+
+
+@frontend.route('/service/<service_name>')
+def service_detail(service_name):
+    service = [service for service in load_services(
+        'services.yml') if service.get('name') == service_name].pop()
+
+    return render_template('test_detail.html', service=service)

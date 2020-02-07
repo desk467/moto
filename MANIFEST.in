@@ -1,0 +1,4 @@
+include status_page/static/css/*.css
+include status_page/static/js/*.js
+include status_page/templates/*.html
+include status_page/templates/components/*.html

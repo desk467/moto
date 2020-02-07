@@ -13,7 +13,7 @@ import requests
 import jinja2
 import json
 
-from util import get_logger
+from status_page.util import get_logger
 
 logger = get_logger('webservice')
 

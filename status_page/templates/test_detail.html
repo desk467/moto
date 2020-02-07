@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %} Detalhe do serviço {{ service.name }} {% endblock %}
+
+{% block body %}
+
+{% with header_title="STATUS PAGE"%}
+{% include "components/_header.html" %}
+{% endwith %}
+
+
+<main class="container" data-service-name="{{ service.name }}">
+
+    <div class="row">
+        <h1>{{ service.name }}</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-10 offset-sm-2 col-md-6 offset-md-3">
+            <section class="section--status alert">
+            </section>
+        </div>
+    </div>
+
+
+
+    <div class="row">
+        <table class="table table-borderless">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Teste</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="2">
+                        <i class="fa fa-spinner fa-pulse"></i> Carregando
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+
+<script type="text/javascript">
+
+    function create_table_row(test_name, test_data) {
+
+        const TPL_SUCCESS = `<i class="fa fa-check text-success"></i>`
+        const TPL_ERROR = `<i class="fa fa-exclamation text-error"></i>`
+
+        return `
+        <tr class="test" data-test-name="${ test_name}">
+                <td>
+                    ${ test_name}
+                </td>
+                <td class="td-test-status">
+                    <div class="test-status">
+                        ${test_data.is_test_passed ? TPL_SUCCESS : TPL_ERROR}
+                    </div>
+                </td>
+        </tr>
+        `
+    }
+
+
+    $(document).ready(function () {
+        let test_results = []
+        const service = $('main').data('service-name')
+
+        const req_server_status = new Promise((resolve, reject) => {
+            $.ajax({
+                method: 'GET',
+                url: '/api/status/' + service,
+                contentType: 'application/json',
+                success: function (data) {
+                    const tests = data[service]
+
+                    let rows = []
+                    for (let test in tests) {
+                        rows.push(
+                            create_table_row(test, tests[test])
+                        )
+                        test_results.push(
+                            tests[test].is_test_passed
+                        )
+                    }
+
+
+                    $('tbody').html(rows.join(''))
+                },
+                error: function (data) {
+                    $('tbody').html('Falha ao recuperar informações de teste.')
+                }
+            })
+
+            $(document).ajaxStop(function () {
+                resolve(test_results)
+
+
+            })
+        }).then((test_results) => {
+            let section_status = $('.section--status')
+
+            if (test_results.length > 0 && test_results.every(test_passed => test_passed)) {
+                section_status.addClass('alert-success')
+                section_status.html(`<i class="fa fa-check"/> Todos os testes passaram`)
+            } else {
+                section_status.addClass('alert-warning')
+                section_status.html('<i class="fa fa-exclamation"/> Alguns testes não passaram.')
+            }
+        })
+    })
+</script>
+
+{% endblock %}

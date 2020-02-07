@@ -8,7 +8,7 @@ Plugin responsável por verificar se uma interface está ativa.
 
 import re
 
-from util import get_logger
+from status_page.util import get_logger
 
 logger = get_logger('network')
 
