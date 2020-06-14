@@ -10,7 +10,7 @@ import locale
 from datetime import datetime
 from datetime import timedelta
 
-from status_page.util import get_logger
+from gavea.util import get_logger
 
 logger = get_logger('systemd')
 
@@ -56,6 +56,6 @@ def systemd(service_name, ssh_connections):
 
     for data in extradata:
         if not data.get('is_active'):
-            return False
+            return False, None
 
     return True, extradata

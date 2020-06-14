@@ -7,11 +7,11 @@ from concurrent.futures import ThreadPoolExecutor
 
 from collections import defaultdict
 
-from status_page import plugins
-from status_page.env import load_hosts, load_services, load_testsuits
-from status_page.util import get_logger
+from gavea import plugins
+from gavea.env import load_hosts, load_services, load_testsuits
+from gavea.util import get_logger
 
-from status_page import exceptions
+from gavea import exceptions
 
 
 logger = get_logger('testrunner')

@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "gavea"
+version = "0.1.0"
+readme = "README.md"
+description = "A status page for your infrastructure"
+authors = ["Ricardo Gomes <desk467@gmail.com>"]
+repository = "https://github.com/desk467/gavea"
+keywords = ["devops", "infrastructure", "testing", "status page"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+packages = [
+    { include = "gavea" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.23.0"
+paramiko = "^2.7.1"
+Flask = "^1.1.2"
+Click = "^7.1.2"
+PyYAML = "^5.3.1"
+
+[tool.poetry.dev-dependencies]
+autopep8 = "^1.5.3"
+rope = "^0.17.0"
+
+[tool.poetry.scripts]
+gavea = "gavea.cli:main"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

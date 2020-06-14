@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
-from status_page.util import get_logger
-from status_page.env import load_hosts, load_services
+from gavea.util import get_logger
+from gavea.env import load_hosts, load_services
 
 logger = get_logger(__name__)
 

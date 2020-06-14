@@ -1,7 +1,5 @@
 import sys
 import logging
-import coloredlogs
-
 
 def get_logger(name):
     logger = logging.getLogger(name)
@@ -12,6 +10,6 @@ def get_logger(name):
 
     logger.addHandler(stdout_handler)
 
-    coloredlogs.install(logger=logger)
-
     return logger
+
+

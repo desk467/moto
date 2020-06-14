@@ -1,7 +1,7 @@
 from flask import Flask
 
-from status_page.webservice import webservice
-from status_page.frontend import frontend
+from gavea.webservice import webservice
+from gavea.frontend import frontend
 
 app = Flask(__name__)
 

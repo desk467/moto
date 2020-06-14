@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-
 import argparse
 import traceback
 import sys
 import os
 
 import asyncio
-from status_page import testrunner
-from status_page.server import app
+from gavea import testrunner
+from gavea.server import app
 
 
 def get_args():

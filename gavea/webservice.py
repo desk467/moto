@@ -1,10 +1,10 @@
 from flask import Blueprint, jsonify, request
 
-from status_page import exceptions
-from status_page.util import get_logger
-from status_page.env import load_hosts, load_services
-from status_page.testrunner import run_all_tests
-from status_page.cache import CacheDict
+from gavea import exceptions
+from gavea.util import get_logger
+from gavea.env import load_hosts, load_services
+from gavea.testrunner import run_all_tests
+from gavea.cache import CacheDict
 
 import asyncio
 
