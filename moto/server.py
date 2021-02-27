@@ -1,7 +1,7 @@
 from flask import Flask
 
-from gavea.webservice import webservice
-from gavea.frontend import frontend
+from moto.webservice import webservice
+from moto.frontend import frontend
 
 app = Flask(__name__)
 

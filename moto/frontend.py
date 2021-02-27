@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
-from gavea.util import get_logger
-from gavea.env import load_hosts, load_services
+from moto.logging import get_logger
+from moto.env import load_hosts, load_services
 
 logger = get_logger(__name__)
 

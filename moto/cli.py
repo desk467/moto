@@ -1,14 +1,11 @@
 import argparse
-import traceback
-import sys
-import os
-
 import asyncio
-from gavea import testrunner
-from gavea.server import app
+from moto import testrunner
+from moto.server import app
+from types import SimpleNamespace
 
 
-def get_args():
+def get_args() -> SimpleNamespace:
     parser = argparse.ArgumentParser(
         description='Runs a checkup test based on your environment',
         prog='status_cli')
@@ -35,6 +32,7 @@ def main():
                                                          services_filepath=args.service_file))
     elif args.exec == 'server':
         app.run(debug=False, host='0.0.0.0')
+
 
 if __name__ == '__main__':
     main()

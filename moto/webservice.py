@@ -1,10 +1,10 @@
 from flask import Blueprint, jsonify, request
 
-from gavea import exceptions
-from gavea.util import get_logger
-from gavea.env import load_hosts, load_services
-from gavea.testrunner import run_all_tests
-from gavea.cache import CacheDict
+from moto import exceptions
+from moto.logging import get_logger
+from moto.env import load_hosts, load_services
+from moto.testrunner import run_all_tests
+from moto.cache import CacheDict
 
 import asyncio
 

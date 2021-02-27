@@ -1,7 +1,8 @@
 import sys
 import logging
 
-def get_logger(name):
+
+def get_logger(name: str) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
@@ -11,5 +12,3 @@ def get_logger(name):
     logger.addHandler(stdout_handler)
 
     return logger
-
-

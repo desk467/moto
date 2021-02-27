@@ -13,7 +13,7 @@ import requests
 import jinja2
 import json
 
-from gavea.util import get_logger
+from moto.logging import get_logger
 
 logger = get_logger('webservice')
 

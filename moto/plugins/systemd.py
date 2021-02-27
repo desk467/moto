@@ -10,7 +10,7 @@ import locale
 from datetime import datetime
 from datetime import timedelta
 
-from gavea.util import get_logger
+from moto.logging import get_logger
 
 logger = get_logger('systemd')
 
